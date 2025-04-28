@@ -45,13 +45,15 @@ const pool = new Pool({
         id SERIAL PRIMARY KEY,
         sender_id INTEGER,
         receiver_id INTEGER,
+        wallet_id INTEGER,
         amount DECIMAL(20,6) NOT NULL,
         currency VARCHAR(10) NOT NULL DEFAULT 'USD',
         type VARCHAR(50) NOT NULL,
         status VARCHAR(20) NOT NULL DEFAULT 'success',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE SET NULL,
-        FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE SET NULL
+        FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (wallet_id) REFERENCES wallets(id) ON DELETE CASCADE
       );
     `);
     console.log('✅ New transactions table created!');
