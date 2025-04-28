@@ -7,11 +7,15 @@ const pool = new Pool({
   },
 });
 
-// Drop old users table + Create new one
-pool.query('DROP TABLE IF EXISTS users;')
-  .then(() => {
+// Drop and recreate tables
+(async () => {
+  try {
+    await pool.query('DROP TABLE IF EXISTS wallets;');
+    console.log('✅ Old wallets table dropped.');
+    await pool.query('DROP TABLE IF EXISTS users;');
     console.log('✅ Old users table dropped.');
-    return pool.query(`
+
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         full_name VARCHAR(255) NOT NULL,
@@ -20,12 +24,23 @@ pool.query('DROP TABLE IF EXISTS users;')
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-  })
-  .then(() => {
     console.log('✅ New users table created!');
-  })
-  .catch((err) => {
-    console.error('❌ Error creating users table:', err);
-  });
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS wallets (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+        balance DECIMAL(20,6) DEFAULT 0.00,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      );
+    `);
+    console.log('✅ New wallets table created!');
+
+  } catch (err) {
+    console.error('❌ Error setting up tables:', err);
+  }
+})();
 
 module.exports = pool;
